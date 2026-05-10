@@ -1,19 +1,27 @@
 package auth
 
 import (
-	thub.com/golang-jwt/jwt/v5"
+	"time"
 
-	me"
+	"github.com/golang-jwt/jwt/v5"
 )
 
-var jwtKey = []byte("sua_chave_secreta_aqui")
+type Claims struct {
+	UserID      string   `json:"user_id"`
+	Permissions []string `json:"permissions"` // Lista de permissões (ex: "relatorio.view")
+	jwt.RegisteredClaims
+}
 
-func GenerateJWT(userID string, role string) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"user_id": userID,
-		"role":    role,
-		"exp":     time.Now().Add(time.Hour * 8).Unix(),
-	})
+func GenerateJWT(userID string, permissions []string) (string, error) {
+	claims := Claims{
+		UserID:      userID,
+		Permissions: permissions,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 8)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+		},
+	}
 
-	return token.SignedString(jwtKey)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString([]byte("sua_chave_secreta"))
 }
