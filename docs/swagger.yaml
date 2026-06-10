@@ -1,21 +1,11 @@
 definitions:
-  handlers.LoginRequest:
+  routes.SignupRequest:
     properties:
       password:
+        example: senha_forte_123
         type: string
       username:
-        type: string
-    type: object
-  routes.authResponse:
-    properties:
-      message:
-        type: string
-    type: object
-  routes.registerRequest:
-    properties:
-      password:
-        type: string
-      username:
+        example: operador_01
         type: string
     type: object
 info:
@@ -25,19 +15,19 @@ paths:
     post:
       consumes:
       - application/json
-      description: Recebe credenciais e retorna um JWT com as permissões do usuário
+      description: Valida credenciais e retorna JWT com permissões estilo Discord
       parameters:
-      - description: Credenciais de Login
+      - description: Credenciais
         in: body
         name: request
         required: true
         schema:
-          $ref: '#/definitions/handlers.LoginRequest'
+          $ref: '#/definitions/routes.SignupRequest'
       produces:
       - application/json
       responses:
         "200":
-          description: 'token: <jwt_token>'
+          description: token
           schema:
             additionalProperties:
               type: string
@@ -46,66 +36,33 @@ paths:
           description: Credenciais inválidas
           schema:
             type: string
-      summary: Realiza o login do usuário
+      summary: Login do usuário
       tags:
       - Auth
-  /auth/logout:
+  /auth/signup:
     post:
       consumes:
       - application/json
-      description: Invalida o token ou revoga a sessão do usuário autenticado
+      description: Cria uma conta e atribui o grupo padrão 'Membro' via transação
       parameters:
-      - description: Bearer token
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/routes.authResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/routes.authResponse'
-        "405":
-          description: Method Not Allowed
-          schema:
-            $ref: '#/definitions/routes.authResponse'
-      summary: Encerra a sessão do usuário
-      tags:
-      - Auth
-  /auth/register:
-    post:
-      consumes:
-      - application/json
-      description: Cria uma nova conta de usuário a partir das credenciais fornecidas
-      parameters:
-      - description: Dados de registro
+      - description: Dados de cadastro
         in: body
         name: request
         required: true
         schema:
-          $ref: '#/definitions/routes.registerRequest'
+          $ref: '#/definitions/routes.SignupRequest'
       produces:
       - application/json
       responses:
         "201":
-          description: Created
+          description: Usuário criado com sucesso
           schema:
-            $ref: '#/definitions/routes.authResponse'
+            type: string
         "400":
-          description: Bad Request
+          description: Dados inválidos
           schema:
-            $ref: '#/definitions/routes.authResponse'
-        "405":
-          description: Method Not Allowed
-          schema:
-            $ref: '#/definitions/routes.authResponse'
-      summary: Registra novo usuário
+            type: string
+      summary: Cadastro de novo usuário
       tags:
       - Auth
 swagger: "2.0"

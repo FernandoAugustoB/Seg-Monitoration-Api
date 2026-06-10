@@ -17,7 +17,7 @@ const docTemplate = `{
     "paths": {
         "/auth/login": {
             "post": {
-                "description": "Recebe credenciais e retorna um JWT com as permissões do usuário",
+                "description": "Valida credenciais e retorna JWT com permissões estilo Discord",
                 "consumes": [
                     "application/json"
                 ],
@@ -27,21 +27,21 @@ const docTemplate = `{
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Realiza o login do usuário",
+                "summary": "Login do usuário",
                 "parameters": [
                     {
-                        "description": "Credenciais de Login",
+                        "description": "Credenciais",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handlers.LoginRequest"
+                            "$ref": "#/definitions/routes.SignupRequest"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "token: \u003cjwt_token\u003e",
+                        "description": "token",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -58,9 +58,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/logout": {
+        "/auth/signup": {
             "post": {
-                "description": "Invalida o token ou revoga a sessão do usuário autenticado",
+                "description": "Cria uma conta e atribui o grupo padrão 'Membro' via transação",
                 "consumes": [
                     "application/json"
                 ],
@@ -70,79 +70,29 @@ const docTemplate = `{
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Encerra a sessão do usuário",
+                "summary": "Cadastro de novo usuário",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "Bearer token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/routes.authResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/routes.authResponse"
-                        }
-                    },
-                    "405": {
-                        "description": "Method Not Allowed",
-                        "schema": {
-                            "$ref": "#/definitions/routes.authResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/auth/register": {
-            "post": {
-                "description": "Cria uma nova conta de usuário a partir das credenciais fornecidas",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Auth"
-                ],
-                "summary": "Registra novo usuário",
-                "parameters": [
-                    {
-                        "description": "Dados de registro",
+                        "description": "Dados de cadastro",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/routes.registerRequest"
+                            "$ref": "#/definitions/routes.SignupRequest"
                         }
                     }
                 ],
                 "responses": {
                     "201": {
-                        "description": "Created",
+                        "description": "Usuário criado com sucesso",
                         "schema": {
-                            "$ref": "#/definitions/routes.authResponse"
+                            "type": "string"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Dados inválidos",
                         "schema": {
-                            "$ref": "#/definitions/routes.authResponse"
-                        }
-                    },
-                    "405": {
-                        "description": "Method Not Allowed",
-                        "schema": {
-                            "$ref": "#/definitions/routes.authResponse"
+                            "type": "string"
                         }
                     }
                 }
@@ -150,33 +100,16 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "handlers.LoginRequest": {
+        "routes.SignupRequest": {
             "type": "object",
             "properties": {
                 "password": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "senha_forte_123"
                 },
                 "username": {
-                    "type": "string"
-                }
-            }
-        },
-        "routes.authResponse": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string"
-                }
-            }
-        },
-        "routes.registerRequest": {
-            "type": "object",
-            "properties": {
-                "password": {
-                    "type": "string"
-                },
-                "username": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "operador_01"
                 }
             }
         }
@@ -193,8 +126,6 @@ var SwaggerInfo = &swag.Spec{
 	Description:      "",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
-	LeftDelim:        "{{",
-	RightDelim:       "}}",
 }
 
 func init() {

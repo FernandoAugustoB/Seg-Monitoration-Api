@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  postgres_db:
+    image: postgres:15-alpine
+    container_name: seg_monitoration_api_db
+    environment:
+      POSTGRES_USER: seguranca_user
+      POSTGRES_PASSWORD: seguranca_password
+      POSTGRES_DB: seguranca_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    # O healthcheck abaixo é necessário para o 'condition: service_healthy' das migrations funcionar
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U seguranca_user -d seguranca_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Gerenciador do Banco de Dados Web (pgAdmin)
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: seg_monitoration_api_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@empresa.com
+      PGADMIN_DEFAULT_PASSWORD: admin_password
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+    depends_on:
+      - postgres_db
+
+  # Service temporário que roda as migrations e desliga
+  migrations:
+    image: migrate/migrate
+    volumes:
+      - ./db/migrations:/migrations
+    command: -path=/migrations -database "postgres://seguranca_user:seguranca_password@postgres_db:5432/seguranca_db?sslmode=disable" up
+    depends_on:
+      postgres_db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
